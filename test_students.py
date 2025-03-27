@@ -1,50 +1,56 @@
+import pytest
 from find_students import find_students
+from find_students2 import find_students2
 
-def test_find_mutual(tmp_path):
+@pytest.fixture(params=[find_students, find_students2])
+def finder(request):
+    return request.param
+
+def test_find_mutual(finder, tmp_path):
     computers = tmp_path / "computers.txt"
     physics = tmp_path / "physics.txt"
     
     computers.write_text("Adi Sudakevitz\nRoie Sudakevitz\n")
     physics.write_text("Roie Sudakevitz\nOren Bachar\n")
     
-    result = find_students(str(computers), str(physics))
+    result = finder(str(computers), str(physics))
     expected = ["roie sudakevitz"]
     assert sorted(result) == sorted(expected)
 
-def test_empty_files(tmp_path):
+def test_empty_files(finder, tmp_path):
     computers = tmp_path / "computers.txt"
     physics = tmp_path / "physics.txt"
     
     computers.write_text("")
     physics.write_text("")
     
-    result = find_students(str(computers), str(physics))
+    result = finder(str(computers), str(physics))
     expected = []
     assert sorted(result) == sorted(expected)
     
-def test_no_mutual(tmp_path):
+def test_no_mutual(finder, tmp_path):
     computers = tmp_path / "computers.txt"
     physics = tmp_path / "physics.txt"
     
     computers.write_text("Adi Sudakevitz\n")
     physics.write_text("Roie Sudakevitz\n")
     
-    result = find_students(str(computers), str(physics))
+    result = finder(str(computers), str(physics))
     expected = []
     assert sorted(result) == sorted(expected)
     
-def test_case_insensitive(tmp_path):
+def test_case_insensitive(finder, tmp_path):
     computers = tmp_path / "computers.txt"
     physics = tmp_path / "physics.txt"
     
     computers.write_text("roie Sudakevitz\n")
     physics.write_text("Roie Sudakevitz\n")
     
-    result = find_students(str(computers), str(physics))
+    result = finder(str(computers), str(physics))
     expected = ["roie sudakevitz"]
     assert sorted(result) == sorted(expected)
     
-def test_large_files(tmp_path):
+def test_large_files(finder, tmp_path):
     computers = tmp_path / "computers.txt"
     physics = tmp_path / "physics.txt"
     
@@ -58,7 +64,7 @@ def test_large_files(tmp_path):
     computers.write_text("\n".join(comp_list))
     physics.write_text("\n".join(phys_list))
 
-    result = find_students(str(computers), str(physics))
+    result = finder(str(computers), str(physics))
     expected = [name for name in common_students]
     assert sorted(result) == sorted(expected)
 
